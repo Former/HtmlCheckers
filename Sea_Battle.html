@@ -16,6 +16,32 @@
 
 from browser import document, html, window
 
+# --- Функции работы с SVG ---------------------------
+  
+def Print2String(*args, **kwargs):
+    newstr = ""
+    for a in args:
+        newstr += str(a) + ''
+    return newstr
+
+color_black = "black"
+color_test_rgb = "rgb(100,255,0)"
+
+def SvgDrawRect(svg, x, y, width, height, color, line_color, line_width):
+    svg += [Print2String("<rect x='",x,"' y='",y,"' width='", width,"' height='", height,"' style=\"fill:",color,";stroke-width:",line_width,";stroke:",line_color,"\" />")]
+    
+def SvgDrawLine(svg, x1, y1, x2, y2, color, width):
+    svg += [Print2String("<line x1='",x1,"' y1='", y1,"' x2='",x2,"' y2='",y2,"' style=\"stroke:",color,";stroke-width:",width,"\" />")]
+
+def SvgMake(svg, width, height):
+    result = Print2String("<svg width='",width,"' height='",height,"' xmlns=\"http://www.w3.org/2000/svg\" xmlns:svg=\"http://www.w3.org/2000/svg\">")
+    for c in svg:
+        result += c
+    result += "</svg>"
+    return result
+
+# ------------------------------------------------------
+  
 def Test():
   return
 
