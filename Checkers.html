@@ -15,8 +15,60 @@
 <script type="text/python">
 
 from browser import document, html, window
+def GetVerticalWords(size):
+    return list(range(1, size + 1))
+
+def GetHorisontalWords(size):
+    return [chr(ord('A') + i) for i in range(size)]
+
+
+def FromStringToXY(string_cmd):
+    if not isinstance(string_cmd, str) or len(string_cmd) < 2:
+        return None
+    
+    horizontal_part = string_cmd[0].upper()
+    vertical_part = string_cmd[1:]
+
+    try:
+        x = ord(horizontal_part) - ord('A')
+        y = int(vertical_part) - 1
+        return x, y
+    except:
+        return None
+
+
+def FromXYToString(x, y):
+    if not isinstance(x, int) or not isinstance(y, int):
+        return None
+    if x < 0 or y < 0:
+        return None
+    horizontal_part = chr(ord('A') + x)
+    vertical_part = str(y + 1) 
+    return horizontal_part + vertical_part
+
+def TestConvertCoordinates():
+    assert FromStringToXY("A1") == (0, 0)
+    assert FromStringToXY("B2") == (1, 1)
+    assert FromStringToXY("C3") == (2, 2)
+    assert FromStringToXY("Z26") == (25, 25)
+    assert FromStringToXY("a1") == (0, 0)
+    assert FromStringToXY("A12") == (0,11)
+    assert FromStringToXY("A") == None
+    assert FromStringToXY("1") == None
+    assert FromStringToXY("1A") == None
+    assert FromStringToXY(1) == None
+    assert FromXYToString(0, 0) == "A1"
+    assert FromXYToString(1, 1) == "B2"
+    assert FromXYToString(2, 2) == "C3"
+    assert FromXYToString(25, 25) == "Z26"
+    assert FromXYToString(0,11) == "A12"
+    assert FromXYToString(-1,1) == None
+    assert FromXYToString(1,-1) == None
+    assert FromXYToString(1.1,1) == None
+    assert FromXYToString(1,1.1) == None
 
 def Test():
+  TestConvertCoordinates()
   return
 
 Test()
