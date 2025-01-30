@@ -10,11 +10,15 @@
 </head>
 <body>
 
+<button id="button1">начать</button>
+    
 <p id="out-text"></p>
 
 <script type="text/python">
 
 from browser import document, html, window
+def myprint(s):
+    document["out-text"].innerHTML = document["out-text"].innerHTML + "<br />" + str(s)
 def GetVerticalWords(size):
     return list(range(1, size + 1))
 
@@ -94,13 +98,13 @@ def TestCreateArray2D():
     assert CreateArray2D(5, 1, 5) == [[5], [5], [5], [5], [5]]
     assert CreateArray2D(10, 5, 1) == [[10, 10, 10, 10, 10]]
 
-TestCreateArray2D()
 def Test():
   TestConvertCoordinates()
   TestCreateArray2D()
+  myprint('всё прашло')
   return
 
-Test()
+document["button1"].bind("click", Test())
 
 </script>
 
