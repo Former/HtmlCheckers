@@ -67,8 +67,37 @@ def TestConvertCoordinates():
     assert FromXYToString(1.1,1) == None
     assert FromXYToString(1,1.1) == None
 
+def CreateArray2D(defaultValue, width, height):
+    if height == 0:
+      return [[]]
+    
+    array2d = []
+    for _ in range(height):
+        row = [defaultValue] * width
+        array2d.append(row)
+    return array2d
+
+def TestCreateArray2D():
+    assert CreateArray2D(0, 0, 0) == [[]]
+    assert CreateArray2D(0, 0, 3) == [[],[],[]]
+    assert CreateArray2D(0, 3, 0) == [[]]
+    assert CreateArray2D(1, 1, 2) == [[1], [1]]
+    assert CreateArray2D(2, 2, 2) == [[2, 2], [2, 2]]
+    assert CreateArray2D(1, 2, 1) == [[1, 1]]
+    assert CreateArray2D("a", 1, 1) == [["a"]]
+    assert CreateArray2D(2, 3, 3) == [[2, 2, 2], [2, 2, 2], [2, 2, 2]]
+    assert CreateArray2D("x", 4, 2) == [["x", "x", "x", "x"], ["x", "x", "x", "x"]]
+    assert CreateArray2D(True, 2, 3) == [[True, True], [True, True], [True, True]]
+    assert CreateArray2D(0, 2, 2) == [[0, 0], [0, 0]]
+    assert CreateArray2D(3.14, 2, 2) == [[3.14, 3.14], [3.14, 3.14]]
+    assert CreateArray2D(None, 2, 2) == [[None, None], [None, None]]
+    assert CreateArray2D(5, 1, 5) == [[5], [5], [5], [5], [5]]
+    assert CreateArray2D(10, 5, 1) == [[10, 10, 10, 10, 10]]
+
+TestCreateArray2D()
 def Test():
   TestConvertCoordinates()
+  TestCreateArray2D()
   return
 
 Test()
