@@ -1,4 +1,4 @@
-<!-- Copyright 2025 by Alexei Bezborodov <AlexeiBv+sea_battle@narod.ru> -->
+<!-- Copyright 2025 by Alexei Bezborodov <AlexeiBv+html_checkers@narod.ru> -->
 <!DOCTYPE html>
 <html>
 
@@ -10,11 +10,92 @@
 </head>
 <body>
 
+<button id="button__start_test">Запустить тестирование</button>
+    
 <p id="out-text"></p>
 
 <script type="text/python">
 
 from browser import document, html, window
+import enum
+
+class UserType(enum.Enum): # Тип пользователя
+    utHuman = enum.auto() # Человек
+    utAI = enum.auto() # Иммитация интеллекта
+
+class User: # Игрок
+    def __init__(self, a_uType, a_uName):
+        self.uType = a_uType
+        self.uName = a_uName
+
+class Point: # Точка или шахматная клетка
+    def __init__(self, a_X, a_Y):
+        self.x = a_X
+        self.y = a_Y
+    def __add__(self, a_Point2):
+        return Point(self.x + a_Point2.x, self.y + a_Point2.y)
+    def __eq__(self, a_Point2):
+        return self.x == a_Point2.x and self.y == a_Point2.y
+
+class BoardItemType(enum.Enum): # Тип шашек
+    biNone = enum.auto() # Ничего
+    biChecker = enum.auto() # Шашка
+    biDamka = enum.auto() # Дамка
+
+class BoardItem: # Фигура на доске
+    def __init__(self, a_Type, a_UserID):
+        self.iType = a_Type
+        self.userID = a_UserID
+    def __eq__(self, a_Point2):
+        return self.iType == a_Point2.iType and self.userID == a_Point2.userID
+
+class Board: #Игровая доска
+    def __init__(self, a_Width, a_Height):
+        self.bWidth = a_Width
+        self.bHeight = a_Height
+        self.bData = CreateArray2D(BoardItem(BoardItemType.biNone, 0), self.bWidth, self.bHeight)
+    def GetWidth(self):
+        return self.bWidth;
+    def GetHeight(self):
+        return self.bHeight;
+    def GetItem(self, a_Point):
+        return self.bData[a_Point.x][a_Point.y];
+    def SetItem(self, a_Point, a_Item):
+        self.bData[a_Point.x][a_Point.y] = a_Item;
+
+class GameRuleType(enum.Enum): # Тип правил игры
+    grNextStep = enum.auto() # Правила следующего хода
+    grFinish = enum.auto() # Правила завершения
+
+class GameRule: # Правила игры
+    def __init__(self, a_Type, a_Function):
+        self.rType = a_Type
+        self.rFunction = a_Function
+
+class Game: # Игра целиком
+    def __init__(self, a_UserList, a_Board, a_RulesList):
+        self.gUserList = a_UserList
+        self.gBoard = a_Board
+        self.gRulesList = a_RulesList
+
+def BaseClassesTest():
+    u = User(UserType.utHuman, "Alexei")
+    assert u.uName == "Alexei"
+    assert u.uType == UserType.utHuman
+    assert Point(1,2) + Point(3,4) == Point(4,6)
+
+    b = Board(3,3)
+    c1 = BoardItem(BoardItemType.biChecker, 0)
+    c2 = BoardItem(BoardItemType.biChecker, 1)
+    b.SetItem(Point(0, 0), c1)
+    b.SetItem(Point(1, 0), c2)
+    assert b.GetItem(Point(0, 0)) == c1
+    assert b.GetItem(Point(1, 0)) == c2
+    assert b.GetItem(Point(1, 1)) == BoardItem(BoardItemType.biNone, 0)
+
+def myprint(s):
+    document["out-text"].innerHTML = document["out-text"].innerHTML + "<br />" + str(s)
+
 def GetVerticalWords(size):
     return list(range(1, size + 1))
 
@@ -94,12 +175,13 @@ def TestCreateArray2D():
     assert CreateArray2D(5, 1, 5) == [[5], [5], [5], [5], [5]]
     assert CreateArray2D(10, 5, 1) == [[10, 10, 10, 10, 10]]
 
-def Test():
-  TestConvertCoordinates()
-  TestCreateArray2D()
-  return
+def Test(event):
+    TestConvertCoordinates()
+    TestCreateArray2D()
+    BaseClassesTest()
+    myprint('Все тесты прошли без ошибок')
 
-Test()
+document["button__start_test"].bind("click", Test)
 
 </script>
 
