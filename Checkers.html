@@ -19,60 +19,67 @@
 from browser import document, html, window
 import enum
 
-class UserType(enum.Enum): # Тип пользователя
-    utHuman = enum.auto() # Человек
-    utAI = enum.auto() # Иммитация интеллекта
+class UserType(enum.Enum):
+    utHuman = enum.auto()
+    utAI = enum.auto()
 
-class User: # Игрок
+class User:
     def __init__(self, a_uType, a_uName):
         self.uType = a_uType
         self.uName = a_uName
 
-class Point: # Точка или шахматная клетка
+class Point:
     def __init__(self, a_X, a_Y):
         self.x = a_X
         self.y = a_Y
+
     def __add__(self, a_Point2):
         return Point(self.x + a_Point2.x, self.y + a_Point2.y)
+
     def __eq__(self, a_Point2):
         return self.x == a_Point2.x and self.y == a_Point2.y
 
-class BoardItemType(enum.Enum): # Тип шашек
-    biNone = enum.auto() # Ничего
-    biChecker = enum.auto() # Шашка
-    biDamka = enum.auto() # Дамка
+class BoardItemType(enum.Enum):
+    biNone = enum.auto()
+    biChecker = enum.auto()
+    biDamka = enum.auto()
 
-class BoardItem: # Фигура на доске
+class BoardItem:
     def __init__(self, a_Type, a_UserID):
         self.iType = a_Type
         self.userID = a_UserID
-    def __eq__(self, a_Point2):
-        return self.iType == a_Point2.iType and self.userID == a_Point2.userID
 
-class Board: #Игровая доска
+    def __eq__(self, a_BoardItem):
+        return self.iType == a_BoardItem.iType and self.userID == a_BoardItem.userID
+
+class Board:
     def __init__(self, a_Width, a_Height):
         self.bWidth = a_Width
         self.bHeight = a_Height
         self.bData = CreateArray2D(BoardItem(BoardItemType.biNone, 0), self.bWidth, self.bHeight)
+
     def GetWidth(self):
-        return self.bWidth;
+        return self.bWidth
+
     def GetHeight(self):
-        return self.bHeight;
+        return self.bHeight
+
     def GetItem(self, a_Point):
-        return self.bData[a_Point.x][a_Point.y];
+        return self.bData[a_Point.y][a_Point.x]
+
     def SetItem(self, a_Point, a_Item):
-        self.bData[a_Point.x][a_Point.y] = a_Item;
+        self.bData[a_Point.y][a_Point.x] = a_Item
 
-class GameRuleType(enum.Enum): # Тип правил игры
-    grNextStep = enum.auto() # Правила следующего хода
-    grFinish = enum.auto() # Правила завершения
+class GameRuleType(enum.Enum):
+    grNextStep = enum.auto()
+    grFinish = enum.auto()
 
-class GameRule: # Правила игры
+class GameRule:
     def __init__(self, a_Type, a_Function):
         self.rType = a_Type
         self.rFunction = a_Function
 
-class Game: # Игра целиком
+class Game:
     def __init__(self, a_UserList, a_Board, a_RulesList):
         self.gUserList = a_UserList
         self.gBoard = a_Board
@@ -82,9 +89,9 @@ def BaseClassesTest():
     u = User(UserType.utHuman, "Alexei")
     assert u.uName == "Alexei"
     assert u.uType == UserType.utHuman
-    assert Point(1,2) + Point(3,4) == Point(4,6)
+    assert Point(1, 2) + Point(3, 4) == Point(4, 6)
 
-    b = Board(3,3)
+    b = Board(3, 3)
     c1 = BoardItem(BoardItemType.biChecker, 0)
     c2 = BoardItem(BoardItemType.biChecker, 1)
     b.SetItem(Point(0, 0), c1)
@@ -102,11 +109,10 @@ def GetVerticalWords(size):
 def GetHorisontalWords(size):
     return [chr(ord('A') + i) for i in range(size)]
 
-
 def FromStringToXY(string_cmd):
     if not isinstance(string_cmd, str) or len(string_cmd) < 2:
         return None
-    
+
     horizontal_part = string_cmd[0].upper()
     vertical_part = string_cmd[1:]
 
@@ -117,14 +123,13 @@ def FromStringToXY(string_cmd):
     except:
         return None
 
-
 def FromXYToString(x, y):
     if not isinstance(x, int) or not isinstance(y, int):
         return None
     if x < 0 or y < 0:
         return None
     horizontal_part = chr(ord('A') + x)
-    vertical_part = str(y + 1) 
+    vertical_part = str(y + 1)
     return horizontal_part + vertical_part
 
 def TestConvertCoordinates():
@@ -133,7 +138,7 @@ def TestConvertCoordinates():
     assert FromStringToXY("C3") == (2, 2)
     assert FromStringToXY("Z26") == (25, 25)
     assert FromStringToXY("a1") == (0, 0)
-    assert FromStringToXY("A12") == (0,11)
+    assert FromStringToXY("A12") == (0, 11)
     assert FromStringToXY("A") == None
     assert FromStringToXY("1") == None
     assert FromStringToXY("1A") == None
@@ -142,16 +147,14 @@ def TestConvertCoordinates():
     assert FromXYToString(1, 1) == "B2"
     assert FromXYToString(2, 2) == "C3"
     assert FromXYToString(25, 25) == "Z26"
-    assert FromXYToString(0,11) == "A12"
-    assert FromXYToString(-1,1) == None
-    assert FromXYToString(1,-1) == None
-    assert FromXYToString(1.1,1) == None
-    assert FromXYToString(1,1.1) == None
+    assert FromXYToString(0, 11) == "A12"
+    assert FromXYToString(-1, 1) == None
+    assert FromXYToString(1, -1) == None
+    assert FromXYToString(1.1, 1) == None
+    assert FromXYToString(1, 1.1) == None
+
 
 def CreateArray2D(defaultValue, width, height):
-    if height == 0:
-      return [[]]
-    
     array2d = []
     for _ in range(height):
         row = [defaultValue] * width
@@ -159,9 +162,9 @@ def CreateArray2D(defaultValue, width, height):
     return array2d
 
 def TestCreateArray2D():
-    assert CreateArray2D(0, 0, 0) == [[]]
+    assert CreateArray2D(0, 0, 0) == []
     assert CreateArray2D(0, 0, 3) == [[],[],[]]
-    assert CreateArray2D(0, 3, 0) == [[]]
+    assert CreateArray2D(0, 3, 0) == []
     assert CreateArray2D(1, 1, 2) == [[1], [1]]
     assert CreateArray2D(2, 2, 2) == [[2, 2], [2, 2]]
     assert CreateArray2D(1, 2, 1) == [[1, 1]]
@@ -175,18 +178,25 @@ def TestCreateArray2D():
     assert CreateArray2D(5, 1, 5) == [[5], [5], [5], [5], [5]]
     assert CreateArray2D(10, 5, 1) == [[10, 10, 10, 10, 10]]
 
+    a = CreateArray2D(0, 2, 2)
+    assert a == [[0, 0], [0, 0]]
+    a[0][0] = 1
+    assert a == [[1, 0], [0, 0]], f"Test Failed: {a}"
+
+    b = CreateArray2D("test", 3, 2)
+    b[0][1] = "modified"
+    assert b == [["test", "modified", "test"], ["test", "test", "test"]], f"Test Failed: {b}"
+
 def Test(event):
     TestConvertCoordinates()
     TestCreateArray2D()
     BaseClassesTest()
     myprint('Все тесты прошли без ошибок')
 
-document["button__start_test"].bind("click", Test)
 
+document["button__start_test"].bind("click", Test)
 </script>
 
 </body>
-
-</html>
 
 </html>
