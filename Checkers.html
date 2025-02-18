@@ -180,13 +180,33 @@ def TestCreateArray2D():
     b = CreateArray2D("test", 3, 2)
     b[0][1] = "modified"
     assert b == [["test", "modified", "test"], ["test", "test", "test"]]
+    
+def CreateHTMLTable(getValueFunc, width, height):
+    result = ""
+    for y in range(width):
+        result += "<tr>"
+        for x in range(height):
+            result += '<td>' + str(getValueFunc(x, y)) + '</td>'
+        result += "</tr>"
+    return "<table border=1>" + result + "</table>"
 
+def TestCreateHTMLTable():
+    def TestValueFunc1(x, y):
+        return str(x+y);
+    def TestValueFunc(x, y):
+        all_desk = [ list("♜♞♝♛♚♝♞♜"), list("♟♟♟♟♟♟♟♟"), list("........"), list("........"), list("........"), list("........"), list("♙♙♙♙♙♙♙♙"), list("♖♘♗♕♔♗♘♖"), ]
+        return all_desk[y][x]
+    assert CreateHTMLTable(TestValueFunc,3,8) == "<table border=1><tr><td>♜</td><td>♞</td><td>♝</td><td>♛</td><td>♚</td><td>♝</td><td>♞</td><td>♜</td></tr><tr><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td></tr><tr><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td></tr></table>"
+    assert CreateHTMLTable(TestValueFunc,2,2) == "<table border=1><tr><td>♜</td><td>♞</td></tr><tr><td>♟</td><td>♟</td></tr></table>"
+    assert CreateHTMLTable(TestValueFunc,1,1) == "<table border=1><tr><td>♜</td></tr></table>"
+    assert CreateHTMLTable(TestValueFunc1,2,2) == "<table border=1><tr><td>0</td><td>1</td></tr><tr><td>1</td><td>2</td></tr></table>"
+    
 def Test(event):
     TestConvertCoordinates()
     TestCreateArray2D()
     BaseClassesTest()
+    TestCreateHTMLTable()
     myprint('Все тесты прошли без ошибок')
-
 
 document["button__start_test"].bind("click", Test)
 </script>
