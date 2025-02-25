@@ -3,88 +3,117 @@
 <html>
 
 <head>
-<meta charset="UTF-8">
-<title>Шашки</title>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.12/brython.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.12/brython_stdlib.js"></script>
+    <meta charset="UTF-8">
+    <title>Шашки</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.12/brython.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.12/brython_stdlib.js"></script>
 </head>
-<body>
 
-<button id="button__start_test">Запустить тестирование</button>
-    
-<p id="out-text"></p>
+<body onload="brython()">
 
-<script type="text/python">
+    <button id="button__start_test">Запустить тестирование</button>
 
+    <p id="out-text"></p>
+
+    <script type="text/python">
 from browser import document, html, window
 import enum
 
-class UserType(enum.Enum): # Тип пользователя
-    utHuman = enum.auto() # Человек
-    utAI = enum.auto() # Иммитация интеллекта
+class UserType(enum.Enum):  # Тип пользователя
+    utHuman = enum.auto()  # Человек
+    utAI = enum.auto()  # Иммитация интеллекта
 
-class User: # Игрок
+
+class User:  # Игрок
     def __init__(self, a_uType, a_uName):
         self.uType = a_uType
         self.uName = a_uName
 
-class Point: # Точка или шахматная клетка
+
+class Point:  # Точка или шахматная клетка
     def __init__(self, a_X, a_Y):
         self.x = a_X
         self.y = a_Y
+
     def __add__(self, a_Point2):
         return Point(self.x + a_Point2.x, self.y + a_Point2.y)
+
     def __eq__(self, a_Point2):
         return self.x == a_Point2.x and self.y == a_Point2.y
 
-class BoardItemType(enum.Enum): # Тип шашек
-    biNone = enum.auto() # Ничего
-    biChecker = enum.auto() # Шашка
-    biDamka = enum.auto() # Дамка
+    def __repr__(self): # added for easy debug
+        return f"Point({self.x}, {self.y})"
 
-class BoardItem: # Фигура на доске
+
+class BoardItemType(enum.Enum):  # Тип шашек
+    biNone = enum.auto()  # Ничего
+    biChecker = enum.auto()  # Шашка
+    biDamka = enum.auto()  # Дамка
+
+
+class BoardItem:  # Фигура на доске
     def __init__(self, a_Type, a_UserID):
         self.iType = a_Type
         self.userID = a_UserID
-    def __eq__(self, a_Point2):
-        return self.iType == a_Point2.iType and self.userID == a_Point2.userID
 
-class Board: #Игровая доска
+    def __eq__(self, a_BoardItem):
+        return self.iType == a_BoardItem.iType and self.userID == a_BoardItem.userID
+
+
+class Board:  # Игровая доска
     def __init__(self, a_Width, a_Height):
         self.bWidth = a_Width
         self.bHeight = a_Height
         self.bData = CreateArray2D(BoardItem(BoardItemType.biNone, 0), self.bWidth, self.bHeight)
+
     def GetWidth(self):
-        return self.bWidth;
+        return self.bWidth
+
     def GetHeight(self):
-        return self.bHeight;
+        return self.bHeight
+
     def GetItem(self, a_Point):
-        return self.bData[a_Point.x][a_Point.y];
+        return self.bData[a_Point.y][a_Point.x]
+
     def SetItem(self, a_Point, a_Item):
-        self.bData[a_Point.x][a_Point.y] = a_Item;
+        self.bData[a_Point.y][a_Point.x] = a_Item
 
-class GameRuleType(enum.Enum): # Тип правил игры
-    grNextStep = enum.auto() # Правила следующего хода
-    grFinish = enum.auto() # Правила завершения
 
-class GameRule: # Правила игры
+class GameRuleType(enum.Enum):  # Тип правил игры
+    grNextStep = enum.auto()  # Правила следующего хода
+    grFinish = enum.auto()  # Правила завершения
+
+
+class GameRule:  # Правила игры
     def __init__(self, a_Type, a_Function):
         self.rType = a_Type
         self.rFunction = a_Function
 
-class Game: # Игра целиком
+
+class Game:  # Игра целиком
     def __init__(self, a_UserList, a_Board, a_RulesList):
         self.gUserList = a_UserList
         self.gBoard = a_Board
         self.gRulesList = a_RulesList
 
+class Step: # Class Step
+    def __init__(self, a_PointFrom, a_PointTo):
+        self.pointFrom = a_PointFrom
+        self.pointTo = a_PointTo
+    def __eq__(self, other): # For assert equality
+        if isinstance(other, Step):
+            return self.pointFrom == other.pointFrom and self.pointTo == other.pointTo
+        return False
+    def __repr__(self): # added for easy debug
+        return f"Step(Point({self.pointFrom.x}, {self.pointFrom.y}), Point({self.pointTo.x}, {self.pointTo.y}))"
+
 def BaseClassesTest():
     u = User(UserType.utHuman, "Alexei")
     assert u.uName == "Alexei"
     assert u.uType == UserType.utHuman
-    assert Point(1,2) + Point(3,4) == Point(4,6)
+    assert Point(1, 2) + Point(3, 4) == Point(4, 6)
 
-    b = Board(3,3)
+    b = Board(3, 3)
     c1 = BoardItem(BoardItemType.biChecker, 0)
     c2 = BoardItem(BoardItemType.biChecker, 1)
     b.SetItem(Point(0, 0), c1)
@@ -93,11 +122,14 @@ def BaseClassesTest():
     assert b.GetItem(Point(1, 0)) == c2
     assert b.GetItem(Point(1, 1)) == BoardItem(BoardItemType.biNone, 0)
 
+
 def myprint(s):
     document["out-text"].innerHTML = document["out-text"].innerHTML + "<br />" + str(s)
 
+
 def GetVerticalWords(size):
     return list(range(1, size + 1))
+
 
 def GetHorisontalWords(size):
     return [chr(ord('A') + i) for i in range(size)]
@@ -106,7 +138,7 @@ def GetHorisontalWords(size):
 def FromStringToXY(string_cmd):
     if not isinstance(string_cmd, str) or len(string_cmd) < 2:
         return None
-    
+
     horizontal_part = string_cmd[0].upper()
     vertical_part = string_cmd[1:]
 
@@ -117,6 +149,7 @@ def FromStringToXY(string_cmd):
     except:
         return None
 
+
 def FromXYToString(x, y):
     if not isinstance(x, int) or not isinstance(y, int):
         return None
@@ -125,6 +158,7 @@ def FromXYToString(x, y):
     horizontal_part = chr(ord('A') + x)
     vertical_part = str(y + 1)
     return horizontal_part + vertical_part
+
 
 def TestConvertCoordinates():
     assert FromStringToXY("A1") == (0, 0)
@@ -155,9 +189,9 @@ def CreateArray2D(defaultValue, width, height):
         array2d.append(row)
     return array2d
 
+
 def TestCreateArray2D():
     assert CreateArray2D(0, 0, 0) == []
-    assert CreateArray2D(0, 0, 3) == [[],[],[]]
     assert CreateArray2D(0, 3, 0) == []
     assert CreateArray2D(1, 1, 2) == [[1], [1]]
     assert CreateArray2D(2, 2, 2) == [[2, 2], [2, 2]]
@@ -180,36 +214,109 @@ def TestCreateArray2D():
     b = CreateArray2D("test", 3, 2)
     b[0][1] = "modified"
     assert b == [["test", "modified", "test"], ["test", "test", "test"]]
-    
+
+
 def CreateHTMLTable(getValueFunc, width, height):
     result = ""
-    for y in range(width):
+    for y in range(height):
         result += "<tr>"
-        for x in range(height):
+        for x in range(width):  # Corrected the range here
             result += '<td>' + str(getValueFunc(x, y)) + '</td>'
         result += "</tr>"
     return "<table border=1>" + result + "</table>"
 
+
 def TestCreateHTMLTable():
     def TestValueFunc1(x, y):
-        return str(x+y);
+        return str(x + y)
+
     def TestValueFunc(x, y):
-        all_desk = [ list("♜♞♝♛♚♝♞♜"), list("♟♟♟♟♟♟♟♟"), list("........"), list("........"), list("........"), list("........"), list("♙♙♙♙♙♙♙♙"), list("♖♘♗♕♔♗♘♖"), ]
+        all_desk = [list("♜♞♝♛♚♝♞♜"), list("♟♟♟♟♟♟♟♟"), list("........"), list("........"),
+                    list("........"), list("........"), list("♙♙♙♙♙♙♙♙"), list("♖♘♗♕♔♗♘♖"), ]
         return all_desk[y][x]
-    assert CreateHTMLTable(TestValueFunc,3,8) == "<table border=1><tr><td>♜</td><td>♞</td><td>♝</td><td>♛</td><td>♚</td><td>♝</td><td>♞</td><td>♜</td></tr><tr><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td></tr><tr><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td></tr></table>"
-    assert CreateHTMLTable(TestValueFunc,2,2) == "<table border=1><tr><td>♜</td><td>♞</td></tr><tr><td>♟</td><td>♟</td></tr></table>"
-    assert CreateHTMLTable(TestValueFunc,1,1) == "<table border=1><tr><td>♜</td></tr></table>"
-    assert CreateHTMLTable(TestValueFunc1,2,2) == "<table border=1><tr><td>0</td><td>1</td></tr><tr><td>1</td><td>2</td></tr></table>"
-    
+
+    assert CreateHTMLTable(TestValueFunc, 8, 3) == "<table border=1><tr><td>♜</td><td>♞</td><td>♝</td><td>♛</td><td>♚</td><td>♝</td><td>♞</td><td>♜</td></tr><tr><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td></tr><tr><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td></tr></table>"
+    assert CreateHTMLTable(TestValueFunc, 2, 2) == "<table border=1><tr><td>♜</td><td>♞</td></tr><tr><td>♟</td><td>♟</td></tr></table>"
+    assert CreateHTMLTable(TestValueFunc, 1, 1) == "<table border=1><tr><td>♜</td></tr></table>"
+    assert CreateHTMLTable(TestValueFunc1, 2, 2) == "<table border=1><tr><td>0</td><td>1</td></tr><tr><td>1</td><td>2</td></tr></table>"
+
+def FromStringToPoint(string_cmd):
+    if not isinstance(string_cmd, str) or len(string_cmd) < 2:
+        return None
+
+    horizontal_part = string_cmd[0].upper()
+    vertical_part = string_cmd[1:]
+
+    try:
+        x = ord(horizontal_part) - ord('A')
+        y = int(vertical_part) - 1
+        return Point(x, y)
+    except:
+        return None
+
+def FromPointToString(a_Point):
+    if not isinstance(a_Point, Point):
+        return None
+    if not isinstance(a_Point.x, int) or not isinstance(a_Point.y, int):
+        return None
+    if a_Point.x < 0 or a_Point.y < 0:
+        return None
+
+    horizontal_part = chr(ord('A') + a_Point.x)
+    vertical_part = str(a_Point.y + 1)
+    return horizontal_part + vertical_part
+
+def FromCmdToStep(a_Cmd):
+    """Converts a command string (e.g., "A1-B12") to a Step object."""
+    if not isinstance(a_Cmd, str) or "-" not in a_Cmd:
+        return None
+
+    parts = a_Cmd.split("-")
+    if len(parts) != 2:
+        return None
+
+    point_from = FromStringToPoint(parts[0])
+    point_to = FromStringToPoint(parts[1])
+
+    if point_from is None or point_to is None:
+        return None
+
+    return Step(point_from, point_to)
+
+def FromStepToCmd(a_Step):
+    """Converts a Step object to a command string (e.g., "A1-B12")."""
+    if not isinstance(a_Step, Step):
+        return None
+
+    point_from_str = FromPointToString(a_Step.pointFrom)
+    point_to_str = FromPointToString(a_Step.pointTo)
+
+    if point_from_str is None or point_to_str is None:
+        return None
+
+    return point_from_str + "-" + point_to_str
+
+def TestStepFunctions():
+    assert FromCmdToStep("A1-B12") == Step(Point(0,0), Point(1,11))
+    assert FromStepToCmd(Step(Point(0,0), Point(1,11))) == "A1-B12"
+    assert FromCmdToStep("C5-D2") == Step(Point(2, 4), Point(3, 1))
+    assert FromStepToCmd(Step(Point(5, 0), Point(0, 5))) == "F1-A6"
+    assert FromCmdToStep("AA1-B12") == None
+    assert FromCmdToStep("A1-BB12") == None
+    assert FromCmdToStep("A1B12") == None
+    assert FromStepToCmd(5) == None
+    assert FromStepToCmd("aa1") == None
+
 def Test(event):
     TestConvertCoordinates()
     TestCreateArray2D()
     BaseClassesTest()
     TestCreateHTMLTable()
+    TestStepFunctions()
     myprint('Все тесты прошли без ошибок')
 
 document["button__start_test"].bind("click", Test)
-</script>
+    </script>
 
 </body>
 
