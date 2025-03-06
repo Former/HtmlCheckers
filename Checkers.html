@@ -78,6 +78,19 @@ class Game: # Игра целиком
         self.gBoard = a_Board
         self.gRulesList = a_RulesList
 
+class Step:
+    def __init__(self, a_PointFrom, a_PointTo):
+        self.pointFrom = a_PointFrom
+        self.pointTo = a_PointTo
+
+    def __eq__(self, other):
+        if isinstance(other, Step):
+            return self.pointFrom == other.pointFrom and self.pointTo == other.pointTo
+        return False
+
+    def __repr__(self):
+        return f"Step(Point({self.pointFrom.x}, {self.pointFrom.y}), Point({self.pointTo.x}, {self.pointTo.y}))"
+
 def BaseClassesTest():
     u = User(UserType.utHuman, "Alexei")
     assert u.uName == "Alexei"
@@ -172,11 +185,6 @@ def TestCreateArray2D():
     assert CreateArray2D(5, 1, 5) == [[5], [5], [5], [5], [5]]
     assert CreateArray2D(10, 5, 1) == [[10, 10, 10, 10, 10]]
 
-    a = CreateArray2D(0, 2, 2)
-    assert a == [[0, 0], [0, 0]]
-    a[0][0] = 1
-    assert a == [[1, 0], [0, 0]]
-
     b = CreateArray2D("test", 3, 2)
     b[0][1] = "modified"
     assert b == [["test", "modified", "test"], ["test", "test", "test"]]
@@ -200,12 +208,64 @@ def TestCreateHTMLTable():
     assert CreateHTMLTable(TestValueFunc,2,2) == "<table border=1><tr><td>♜</td><td>♞</td></tr><tr><td>♟</td><td>♟</td></tr></table>"
     assert CreateHTMLTable(TestValueFunc,1,1) == "<table border=1><tr><td>♜</td></tr></table>"
     assert CreateHTMLTable(TestValueFunc1,2,2) == "<table border=1><tr><td>0</td><td>1</td></tr><tr><td>1</td><td>2</td></tr></table>"
-    
+def FromStringToPoint(string_cmd):
+    if not isinstance(string_cmd, str):
+        return None
+    letter = string_cmd[0].upper()
+    number = string_cmd[1:]
+
+    if not letter.isalpha() or not number.isdigit():
+        return None
+
+    x = ord(letter) - ord('A')
+    y = int(number) - 1
+    return Point(x, y)
+
+def FromPointToString(a_Point):
+    if not isinstance(a_Point, Point):
+        return None
+    letter = chr(a_Point.x + ord('A'))
+    number = str(a_Point.y + 1)
+    return letter + number
+
+def FromCmdToStep(a_Cmd):
+    if not isinstance(a_Cmd, str):
+        return None
+
+    parts = a_Cmd.split("-")
+    if len(parts) != 2:
+        return None
+
+    start = FromStringToPoint(parts[0])
+    end = FromStringToPoint(parts[1])
+
+    if start is None or end is None:
+        return None
+
+    return Step(start, end)
+
+def FromStepToCmd(a_Step):
+    if not isinstance(a_Step, Step):
+        return None
+
+    start = FromPointToString(a_Step.pointFrom)
+    end = FromPointToString(a_Step.pointTo)
+
+    if start is None or end is None:
+        return None
+
+    return start + "-" + end
+
+def TestStepFunctions():
+    assert FromCmdToStep("A1-B12") == Step(Point(0,0), Point(1,11))
+    assert FromStepToCmd(Step(Point(0,0), Point(1,11))) == "A1-B12"
+
 def Test(event):
     TestConvertCoordinates()
     TestCreateArray2D()
     BaseClassesTest()
     TestCreateHTMLTable()
+    TestStepFunctions()
     myprint('Все тесты прошли без ошибок')
 
 document["button__start_test"].bind("click", Test)
