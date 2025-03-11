@@ -37,6 +37,20 @@ class Point: # Точка или шахматная клетка
     def __eq__(self, a_Point2):
         return self.x == a_Point2.x and self.y == a_Point2.y
 
+def TestUserEqual():
+    i = User(UserType.utHuman,"User1")
+    you = User(UserType.utHuman,"User2")
+    assert i != you
+    i = User(UserType.utHuman,"User1")
+    you = User(UserType.utHuman,"User1")
+    assert i == you
+    i = User(UserType.utHuman,"User1")
+    you = User(UserType.utAI,"User1")
+    assert i != you
+    i = User(UserType.utAI,"User1")
+    iou = User(UserType.utAI,"User1")
+    assert i == you
+
 class BoardItemType(enum.Enum): # Тип шашек
     biNone = enum.auto() # Ничего
     biChecker = enum.auto() # Шашка
@@ -62,6 +76,32 @@ class Board: #Игровая доска
         return self.bData[a_Point.x][a_Point.y];
     def SetItem(self, a_Point, a_Item):
         self.bData[a_Point.x][a_Point.y] = a_Item;
+
+def TestBoardEqual():
+    Board1 = Board(1,1)
+    Board2 = Board(1,1)
+    assert Board1 == Board2
+    Board1 = Board(2,1)
+    Board2 = Board(1,2)
+    assert Board1 != Board2
+    Board1 = Board(10,8)
+    Board2 = Board(10,8)
+    assert Board1 == Board2
+    Board1 = Board(8,10)
+    Board2 = Board(10,8)
+    assert Board1 != Board2
+    Board1 = Board(10,8)
+    Board2 = Board(10,8)
+    c1 = BoardItem(BoardItemType.biChecker, 0)
+    c2 = BoardItem(BoardItemType.biChecker, 0)
+    Board1.SetItem(Point(1, 0), c1)
+    Board2.SetItem(Point(1, 0), c2)
+    assert Board1 == Board2
+    Board1 = Board(10,8)
+    Board2 = Board(10,8)
+    c1 = BoardItem(BoardItemType.biChecker, 0)
+    Board1.SetItem(Point(1, 0), c1)
+    assert Board1 != Board2
 
 class GameRuleType(enum.Enum): # Тип правил игры
     grNextStep = enum.auto() # Правила следующего хода
