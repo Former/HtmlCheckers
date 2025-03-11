@@ -27,6 +27,22 @@ class User: # Игрок
     def __init__(self, a_uType, a_uName):
         self.uType = a_uType
         self.uName = a_uName
+    def __eq__(User1,User2):
+        return User1.uName == User2.uName and User1.uType == User2.uType
+
+def TestUserEqual():
+    i = User(UserType.utHuman,"User1")
+    you = User(UserType.utHuman,"User2")
+    assert i != you
+    i = User(UserType.utHuman,"User1")
+    you = User(UserType.utHuman,"User1")
+    assert i == you
+    i = User(UserType.utHuman,"User1")
+    you = User(UserType.utAI,"User1")
+    assert i != you
+    i = User(UserType.utAI,"User1")
+    iou = User(UserType.utAI,"User1")
+    assert i == you
 
 class Point: # Точка или шахматная клетка
     def __init__(self, a_X, a_Y):
@@ -62,6 +78,34 @@ class Board: #Игровая доска
         return self.bData[a_Point.x][a_Point.y];
     def SetItem(self, a_Point, a_Item):
         self.bData[a_Point.x][a_Point.y] = a_Item;
+    def __eq__(Board1,Board2):
+        return Board1.GetHeight() == Board2.GetHeight() and Board1.GetWidth() == Board2.GetWidth() and Board1.bData == Board2.bData
+
+def TestBoardEqual():
+    Board1 = Board(1,1)
+    Board2 = Board(1,1)
+    assert Board1 == Board2
+    Board1 = Board(2,1)
+    Board2 = Board(1,2)
+    assert Board1 != Board2
+    Board1 = Board(10,8)
+    Board2 = Board(10,8)
+    assert Board1 == Board2
+    Board1 = Board(8,10)
+    Board2 = Board(10,8)
+    assert Board1 != Board2
+    Board1 = Board(10,8)
+    Board2 = Board(10,8)
+    c1 = BoardItem(BoardItemType.biChecker, 0)
+    c2 = BoardItem(BoardItemType.biChecker, 0)
+    Board1.SetItem(Point(1, 0), c1)
+    Board2.SetItem(Point(1, 0), c2)
+    assert Board1 == Board2
+    Board1 = Board(10,8)
+    Board2 = Board(10,8)
+    c1 = BoardItem(BoardItemType.biChecker, 0)
+    Board1.SetItem(Point(1, 0), c1)
+    assert Board1 != Board2
 
 class GameRuleType(enum.Enum): # Тип правил игры
     grNextStep = enum.auto() # Правила следующего хода
@@ -206,6 +250,8 @@ def Test(event):
     TestCreateArray2D()
     BaseClassesTest()
     TestCreateHTMLTable()
+    TestUserEqual()
+    TestBoardEqual
     myprint('Все тесты прошли без ошибок')
 
 document["button__start_test"].bind("click", Test)
