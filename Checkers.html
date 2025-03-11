@@ -27,15 +27,8 @@ class User: # Игрок
     def __init__(self, a_uType, a_uName):
         self.uType = a_uType
         self.uName = a_uName
-
-class Point: # Точка или шахматная клетка
-    def __init__(self, a_X, a_Y):
-        self.x = a_X
-        self.y = a_Y
-    def __add__(self, a_Point2):
-        return Point(self.x + a_Point2.x, self.y + a_Point2.y)
-    def __eq__(self, a_Point2):
-        return self.x == a_Point2.x and self.y == a_Point2.y
+    def __eq__(User1,User2):
+        return User1.uName == User2.uName and User1.uType == User2.uType
 
 def TestUserEqual():
     i = User(UserType.utHuman,"User1")
@@ -50,6 +43,15 @@ def TestUserEqual():
     i = User(UserType.utAI,"User1")
     iou = User(UserType.utAI,"User1")
     assert i == you
+
+class Point: # Точка или шахматная клетка
+    def __init__(self, a_X, a_Y):
+        self.x = a_X
+        self.y = a_Y
+    def __add__(self, a_Point2):
+        return Point(self.x + a_Point2.x, self.y + a_Point2.y)
+    def __eq__(self, a_Point2):
+        return self.x == a_Point2.x and self.y == a_Point2.y
 
 class BoardItemType(enum.Enum): # Тип шашек
     biNone = enum.auto() # Ничего
@@ -76,6 +78,8 @@ class Board: #Игровая доска
         return self.bData[a_Point.x][a_Point.y];
     def SetItem(self, a_Point, a_Item):
         self.bData[a_Point.x][a_Point.y] = a_Item;
+    def __eq__(Board1,Board2):
+        return Board1.GetHeight() == Board2.GetHeight() and Board1.GetWidth() == Board2.GetWidth() and Board1.bData == Board2.bData
 
 def TestBoardEqual():
     Board1 = Board(1,1)
@@ -246,6 +250,8 @@ def Test(event):
     TestCreateArray2D()
     BaseClassesTest()
     TestCreateHTMLTable()
+    TestUserEqual()
+    TestBoardEqual
     myprint('Все тесты прошли без ошибок')
 
 document["button__start_test"].bind("click", Test)
