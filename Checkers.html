@@ -244,6 +244,55 @@ def TestCreateHTMLTable():
     assert CreateHTMLTable(TestValueFunc,2,2) == "<table border=1><tr><td>♜</td><td>♞</td></tr><tr><td>♟</td><td>♟</td></tr></table>"
     assert CreateHTMLTable(TestValueFunc,1,1) == "<table border=1><tr><td>♜</td></tr></table>"
     assert CreateHTMLTable(TestValueFunc1,2,2) == "<table border=1><tr><td>0</td><td>1</td></tr><tr><td>1</td><td>2</td></tr></table>"
+
+class Step:
+    def __init__(self, pointFrom, pointTo):
+        self.pointFrom = pointFrom
+        self.pointTo = pointTo
+
+    def __eq__(self, other):
+        return self.pointFrom == other.pointFrom and self.pointTo == other.pointTo
+
+def FromStringToPoint(string_cmd):
+    if not isinstance(string_cmd, str) or len(string_cmd) < 2:
+        return None
+    try:
+        x = ord(string_cmd[0].upper()) - ord('A')
+        y = int(string_cmd[1:]) - 1
+        return Point(x, y)
+    except (ValueError, TypeError):
+        return None
+
+def FromPointToString(a_Point):
+    if not isinstance(a_Point, Point):
+        return None
+    try:
+        return chr(a_Point.x + ord('A')) + str(a_Point.y + 1)
+    except (TypeError, ValueError):
+        return None
+
+def FromCmdToStep(a_Cmd):
+    if not isinstance(a_Cmd, str) or "-" not in a_Cmd:
+        return None
+    try:
+        start, end = a_Cmd.split("-")
+        return Step(FromStringToPoint(start), FromStringToPoint(end))
+    except:
+        return None
+
+def FromStepToCmd(a_Step):
+    if not isinstance(a_Step, Step):
+        return None
+    try:
+        return f"{FromPointToString(a_Step.pointFrom)}-{FromPointToString(a_Step.pointTo)}"
+    except:
+        return None
+
+def TestStepFunctions():
+    assert FromCmdToStep("A1-B12") == Step(Point(0, 0), Point(1, 11))
+    assert FromStepToCmd(Step(Point(0, 0), Point(1, 11))) == "A1-B12"
+    assert FromCmdToStep("C5-D2") == Step(Point(2, 4), Point(3, 1))
+    assert FromStepToCmd(Step(Point(5, 0), Point(0, 5))) == "F1-A6"
     
 def Test(event):
     TestConvertCoordinates()
@@ -252,6 +301,7 @@ def Test(event):
     TestCreateHTMLTable()
     TestUserEqual()
     TestBoardEqual
+    TestStepFunctions()
     myprint('Все тесты прошли без ошибок')
 
 document["button__start_test"].bind("click", Test)
