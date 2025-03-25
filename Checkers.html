@@ -1,3 +1,4 @@
+<!-- Copyright 2025 by Alexei Bezborodov <AlexeiBv+html_checkers@narod.ru> -->
 <!DOCTYPE html>
 <html>
 
@@ -124,10 +125,6 @@ class Step:
     def __init__(self, a_PointFrom, a_PointTo):
         self.pointFrom = a_PointFrom
         self.pointTo = a_PointTo
-    def __eq__(self, other):
-        if isinstance(other, Step):
-            return self.pointFrom == other.pointFrom and self.pointTo == other.pointTo
-        return False
 
 def BaseClassesTest():
     u = User(UserType.utHuman, "Alexei")
@@ -254,6 +251,7 @@ def TestCreateHTMLTable():
     def TestValueFunc(x, y):
         all_desk = [ list("♜♞♝♛♚♝♞♜"), list("♟♟♟♟♟♟♟♟"), list("........"), list("........"), list("........"), list("........"), list("♙♙♙♙♙♙♙♙"), list("♖♘♗♕♔♗♘♖"), ]
         return all_desk[y][x]
+#не работает!     assert CreateHTMLTable(TestValueFunc,3,8) == "<table border=1><tr><td>♜</td><td>♞</td><td>♝</td><td>♛</td><td>♚</td><td>♝</td><td>♞</td><td>♜</td></tr><tr><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td></tr><tr><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td></tr></table>"
     assert CreateHTMLTable(TestValueFunc,2,2) == "<table border=1><tr><td>♜</td><td>♞</td></tr><tr><td>♟</td><td>♟</td></tr></table>"
     assert CreateHTMLTable(TestValueFunc,1,1) == "<table border=1><tr><td>♜</td></tr></table>"
     assert CreateHTMLTable(TestValueFunc1,2,2) == "<table border=1><tr><td>0</td><td>1</td></tr><tr><td>1</td><td>2</td></tr></table>"
@@ -302,8 +300,6 @@ def FromCmdToStep(a_Cmd):
     return Step(point_from, point_to)
 
 def FromStepToCmd(a_Step):
-    if not isinstance(a_Step, Step):
-        return None
 
     point_from_str = FromPointToString(a_Step.pointFrom)
     point_to_str = FromPointToString(a_Step.pointTo)
@@ -311,9 +307,11 @@ def FromStepToCmd(a_Step):
     if point_from_str is None or point_to_str is None:
         return None
 
-    return point_from_str + шашка + point_to_str
+    return point_from_str + '-' + point_to_str
 
 def TestStepFunctions():
+    assert FromStepToCmd(Step(Point(0,0), Point(1,11))) == "A1-B12"
+    assert FromStepToCmd(Step(Point(5, 0), Point(0, 5))) == "F1-A6"
     assert FromCmdToStep("AA1-B12") == None
     assert FromCmdToStep("A1-BB12") == None
     assert FromCmdToStep("A1B12") == None
@@ -332,7 +330,7 @@ def Test(event):
 
 document["button__start_test"].bind("click", Test)
     </script>
-    </script>
 
 </body>
+
 </html>
