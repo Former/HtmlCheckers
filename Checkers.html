@@ -116,6 +116,37 @@ class GameRule: # Правила игры
         self.rType = a_Type
         self.rFunction = a_Function
 
+def ListStartPoints(a_UserID, a_Board, a_Rules):
+    points = []
+    for y in range(a_Board.GetHeight()):
+        for x in range(a_Board.GetWidth()):
+            p = Point(x, y)
+            bItem = a_Board.GetItem(p)
+            if bItem.userID == a_UserID and BoardItemType.biNone != bItem.iType:
+                points = points + [p]
+    return points
+
+def TestListStartPoints():
+    r = []
+    board1 = Board(8, 8)
+
+    user_id1 = 0
+    user_id2 = 1
+
+    assert ListStartPoints(user_id1, board1, r) == []
+
+    c1 = BoardItem(BoardItemType.biChecker, user_id1)
+    c2 = BoardItem(BoardItemType.biChecker, user_id2)
+    board1.SetItem(Point(1, 0), c1)
+    board1.SetItem(Point(1, 1), c1)
+
+    assert ListStartPoints(user_id2, board1, r) == []
+    
+    board1.SetItem(Point(3, 0), c2)
+
+    assert ListStartPoints(user_id1, board1, r) == [Point(1,0), Point(1,1)]
+    assert ListStartPoints(user_id2, board1, r) == [Point(3,0)]
+
 class Game: # Игра целиком
     def __init__(self, a_UserList, a_Board, a_RulesList):
         self.gUserList = a_UserList
@@ -252,6 +283,7 @@ def Test(event):
     TestCreateHTMLTable()
     TestUserEqual()
     TestBoardEqual
+    TestListStartPoints()
     myprint('Все тесты прошли без ошибок')
 
 document["button__start_test"].bind("click", Test)
