@@ -358,6 +358,82 @@ def TestStepFunctions():
     assert FromCmdToStep("A1B12") == None
     assert FromStepToCmd(5) == None
     assert FromStepToCmd("aa1") == None
+class UserPlace(enum.Enum):
+    up = enum.auto() 
+    bottom = enum.auto()
+    left = enum.auto() 
+    right = enum.auto() 
+
+def IsBlack(x, y):
+    if x % 2 > 0 and y % 2 > 0 or x % 2 == 0 and y % 2 == 0:
+        return True
+    return False
+
+def PlaceCheck(dir, x, y, width, height):
+    if UserPlace.bottom == dir:
+        if IsBlack(x, y) and ShorterToWhite(y):
+            return True
+        return False
+    elif UserPlace.up == dir:
+        if IsBlack(x, y) and ShorterToBlack(y,height):
+            return True
+        return False
+    elif UserPlace.left == dir:
+        if IsBlack(x ,y) and ShorterToGray(x):
+            return True
+    elif UserPlace.right == dir:
+        if IsBlack(x ,y) and ShorterToAqamarine(x ,width):
+            return True
+    return False
+def ShorterToWhite(y):
+    if  y <= 2:
+        return True
+    return False
+    
+    
+
+def ShorterToBlack(y,height):
+    if  y >= height - 3:
+        return True
+    return False
+
+def ShorterToGray(x):
+    if x <= 2:
+        return True
+    return False
+    
+def ShorterToAqamarine(x,width):
+    if x >= width - 3:
+        return True 
+    return False
+
+def TestPlaceCheck():
+    assert IsBlack(0, 0) == True
+    assert IsBlack(2, 4) == True
+    assert IsBlack(0, 1) == False
+    assert IsBlack(1, 0) == False
+    assert IsBlack(1, 1) == True
+    
+    assert PlaceCheck(UserPlace.bottom, 0, 0, 8, 8) == True
+    assert PlaceCheck(UserPlace.bottom, 0, 1, 8, 8) == False
+    assert PlaceCheck(UserPlace.up, 6, 6, 8, 8,)==True
+    assert PlaceCheck(UserPlace.up, 1, 6, 8, 8)==False
+    assert PlaceCheck(UserPlace.left, 2, 2, 8, 8)==True
+    assert PlaceCheck(UserPlace.left, 3, 6, 8, 8)==False
+    assert PlaceCheck(UserPlace.right, 5, 7, 8, 8)==True
+    assert PlaceCheck(UserPlace.right, 1, 2, 8, 8)==False
+    
+    assert ShorterToBlack(6,8)==True
+    assert ShorterToBlack(1,8)==False
+    
+    assert ShorterToWhite(1)==True
+    assert ShorterToWhite(4)==False
+    
+    assert ShorterToGray(1)==True
+    assert ShorterToGray(5)==False
+
+    assert ShorterToAqamarine(13,15)==True
+    assert ShorterToAqamarine(1,8)==False
 
 def Test(event):
     TestConvertCoordinates()
@@ -368,6 +444,7 @@ def Test(event):
     TestListStartPoints()
     TestBoardEqual()
     TestStepFunctions()
+    TestPlaceCheck()
     myprint('Все тесты прошли без ошибок')
 
 document["button__start_test"].bind("click", Test)
