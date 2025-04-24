@@ -435,6 +435,45 @@ def TestPlaceCheck():
     assert ShorterToAqamarine(13,15)==True
     assert ShorterToAqamarine(1,8)==False
 
+def NextItemStep(a_PointStart, a_Board, user_id):
+    possible_steps = []
+    current_item = a_Board.GetItem(a_PointStart)
+
+    if current_item is None or current_item.userID != user_id or current_item.iType != BoardItemType.biChecker:
+        return possible_steps
+
+    if user_id == 0:
+        move_directions = [Point(-1, 1), Point(1, 1)]
+    else:
+        move_directions = [Point(-1, -1), Point(1, -1)]
+
+    for move_direction in move_directions:
+        new_point = Point(a_PointStart.x + move_direction.x, a_PointStart.y + move_direction.y)
+
+        if 0 <= new_point.x < a_Board.GetWidth() and 0 <= new_point.y < a_Board.GetHeight():
+            target_item = a_Board.GetItem(new_point)
+
+            if target_item.iType == BoardItemType.biNone:
+                possible_steps.append(new_point)
+
+    return possible_steps
+
+def TestNextItemStep():
+    board_width, board_height = 8, 8
+    b = Board(board_width, board_height)
+
+    user_id = 0
+    checker = BoardItem(BoardItemType.biChecker, user_id)
+
+    start_point = Point(2, 2)
+    b.SetItem(start_point, checker)
+
+    possible_next_steps = NextItemStep(start_point, b, user_id)
+
+    expected_steps = [Point(1, 3), Point(3, 3)]
+
+    assert all(step in possible_next_steps for step in expected_steps) and len(possible_next_steps) == len(expected_steps)
+
 def Test(event):
     TestConvertCoordinates()
     TestCreateArray2D()
@@ -445,6 +484,7 @@ def Test(event):
     TestBoardEqual()
     TestStepFunctions()
     TestPlaceCheck()
+    TestNextItemStep()
     myprint('Все тесты прошли без ошибок')
 
 document["button__start_test"].bind("click", Test)
