@@ -1,4 +1,4 @@
-<!-- Copyright 2025 by Alexei Bezborodov <AlexeiBv+html_checkers@narod.ru> -->
+﻿<!-- Copyright 2025 by Alexei Bezborodov <AlexeiBv+html_checkers@narod.ru> -->
 <!DOCTYPE html>
 <html>
 
@@ -106,15 +106,18 @@ def TestBoardEqual():
     Board1.SetItem(Point(1, 0), c1)
     assert Board1 != Board2
 
-class GameRuleType(enum.Enum): # Тип правил игры
-    grNextStep = enum.auto() # Правила следующего хода
-    grFinish = enum.auto() # Правила завершения
-
-class GameRule: # Правила игры
-    def __init__(self, a_Type, a_Function):
-        self.rType = a_Type
-        self.rFunction = a_Function
+class GameRules:
+    def InitBoard(self, a_Board):
+        return
     
+    def PointsToNextStep(self, a_Board):
+        return []
+
+    def IsFinish(self, a_Board):
+        return False
+    
+    def DoStep(self, gBoard, p, userID):
+        return True
 
 def ListStartPoints(a_UserID, a_Board, a_Rules):
     points = []
@@ -148,21 +151,37 @@ def TestListStartPoints():
     assert ListStartPoints(user_id2, board1, r) == [Point(3,0)]
 
 class Game: # Игра целиком
-    def __init__(self, a_UserList, a_Board, a_RulesList):
+    def __init__(self, a_UserList, a_Board, a_Rules):
         self.gUserList = a_UserList
         self.gBoard = a_Board
-        self.gRulesList = a_RulesList
-
+        self.gRules = a_Rules
+        self.curUserID = 0
+        self.gRules.InitBoard(self.gBoard)
+    def GetCurrentUserID(self): # Игрок, который ходит
+        return self.curUserID
+    def GetTryPoints(self): # Текущий список возможных ходов
+        return self.gRules.PointsToNextStep(self.gBoard)
+    def DoStep(self, p): # Сделать ход
+        if p in self.GetTryPoints():
+            switch_user = self.gRules.DoStep(self.gBoard, p, self.GetCurrentUserID())
+            if switch_user:
+                self.curUserID += 1
+                if self.curUserID >= len(self.gUserList):
+                    self.curUserID = 0
     
 class Step:
     def __init__(self, a_PointFrom, a_PointTo):
         self.pointFrom = a_PointFrom
         self.pointTo = a_PointTo
     def __str__(self):
-	return f"Step(Point({self.pointFrom.x}, {self.pointFrom.y}), Point({self.pointTo.x}, {self.pointTo.y}))"
+        return f"Step(Point({self.pointFrom.x}, {self.pointFrom.y}), Point({self.pointTo.x}, {self.pointTo.y}))"
     def __eq__(self, other): # For assert equality
         if isinstance(other, Step):
             return self.pointFrom == other.pointFrom and self.pointTo == other.pointTo
+
+class GameVisualizer:
+    def RunNextStep(self):
+        return
 
 def BaseClassesTest():
     u = User(UserType.utHuman, "Alexei")
@@ -183,6 +202,9 @@ def BaseClassesTest():
 
 def myprint(s):
     document["out-text"].innerHTML = document["out-text"].innerHTML + "<br />" + str(s)
+
+def owerride_print(s):
+    document["out-text"].innerHTML = str(s)
 
 
 def GetVerticalWords(size):
@@ -273,12 +295,16 @@ def TestCreateArray2D():
 
 
 
-def CreateHTMLTable(getValueFunc, width, height):
+def CreateHTMLTable(getValueFunc, onClickFuncName, width, height):
     result = ""
     for y in range(height):
         result += "<tr>"
         for x in range(width):
-            result += '<td>' + str(getValueFunc(x, y)) + '</td>'
+            val = str(getValueFunc(x, y))
+            onClick = ""
+            if onClickFuncName != "":
+                onClick = " onclick='" + onClickFuncName + "("+ str(x) + "," + str(y) + ");' "
+            result += '<td' + onClick + '>' + val + '</td>'
         result += "</tr>"
     return "<table border=1>" + result + "</table>"
 
@@ -290,9 +316,9 @@ def TestCreateHTMLTable():
         all_desk = [ list("♜♞♝♛♚♝♞♜"), list("♟♟♟♟♟♟♟♟"), list("........"), list("........"), list("........"), list("........"), list("♙♙♙♙♙♙♙♙"), list("♖♘♗♕♔♗♘♖"), ]
         return all_desk[y][x]
 #не работает!     assert CreateHTMLTable(TestValueFunc,3,8) == "<table border=1><tr><td>♜</td><td>♞</td><td>♝</td><td>♛</td><td>♚</td><td>♝</td><td>♞</td><td>♜</td></tr><tr><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td><td>♟</td></tr><tr><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td></tr></table>"
-    assert CreateHTMLTable(TestValueFunc,2,2) == "<table border=1><tr><td>♜</td><td>♞</td></tr><tr><td>♟</td><td>♟</td></tr></table>"
-    assert CreateHTMLTable(TestValueFunc,1,1) == "<table border=1><tr><td>♜</td></tr></table>"
-    assert CreateHTMLTable(TestValueFunc1,2,2) == "<table border=1><tr><td>0</td><td>1</td></tr><tr><td>1</td><td>2</td></tr></table>"
+    assert CreateHTMLTable(TestValueFunc, "", 2, 2) == "<table border=1><tr><td>♜</td><td>♞</td></tr><tr><td>♟</td><td>♟</td></tr></table>"
+    assert CreateHTMLTable(TestValueFunc, "", 1, 1) == "<table border=1><tr><td>♜</td></tr></table>"
+    assert CreateHTMLTable(TestValueFunc1, "", 2, 2) == "<table border=1><tr><td>0</td><td>1</td></tr><tr><td>1</td><td>2</td></tr></table>"
 splitter = '-'
 
 def FromStringToPoint(string_cmd):
@@ -436,26 +462,82 @@ def TestPlaceCheck():
     assert ShorterToAqamarine(1,8)==False
 
 def TestXO():
-    def NextStepXO():
-        return []
+    # Игра крестики - нолики
+    class GameVisualizerXO (GameVisualizer):
+        def __init__(self, a_Game):
+            self.game = a_Game
 
-    def FinishXO():
-        return []
-    
+        def GetUserPlayItem(self, userID):
+            user_play_item = "O"
+            if (userID == 0):
+                user_play_item = "X"
+            return user_play_item
+
+        def RunNextStep(self):
+            self.DrawBoard()
+
+        def DrawBoard(self):
+            game = self.game
+            board = game.gBoard
+            def GetValueXO(x, y):
+                b_item = board.GetItem(Point(x, y))
+                if b_item.iType == BoardItemType.biChecker:
+                    user_play_item = self.GetUserPlayItem(b_item.userID)
+                    return user_play_item
+                else:
+                    return "&nbsp;&nbsp;"
+
+            def OnClick(x, y):
+                game.DoStep(Point(x, y))
+                self.RunNextStep()
+            window.OnClick = OnClick
+
+            board_html = CreateHTMLTable(GetValueXO, "OnClick", board.bWidth, board.bHeight)
+            user_play_item = self.GetUserPlayItem(game.GetCurrentUserID())
+            board_html += "<p>Ходят " + user_play_item + "</p>"
+
+            owerride_print(board_html)
+
+
+    class GameRulesXO (GameRules):
+        def InitBoard(self, a_Board):
+            b = a_Board
+
+            for y in range(b.GetHeight()):
+                for x in range(b.GetWidth()):
+                    p = Point(x, y)
+                    b.SetItem(p, BoardItem(BoardItemType.biNone, 0))
+
+        def PointsToNextStep(self, a_Board):
+            result = []
+            for y in range(a_Board.GetHeight()):
+                for x in range(a_Board.GetWidth()):
+                    p = Point(x, y)
+                    b_item = a_Board.GetItem(p)
+                    if b_item.iType == BoardItemType.biNone:
+                        result += [p]
+            return result
+
+        def DoStep(self, a_Board, p, userID):
+            a_Board.SetItem(p, BoardItem(BoardItemType.biChecker, userID))
+            return True
+
+        def IsFinish(self, a_Board):
+            return False
+
     user_list = [
         User(UserType.utHuman, "Pavel"),
         User(UserType.utHuman, "Maxim"),
     ]
 
     b = Board(3, 3)
-    game_rules = [
-        GameRule(GameRuleType.grNextStep, NextStepXO),
-        GameRule(GameRuleType.grFinish, FinishXO),
-    ]
+
+    game_rules = GameRulesXO()
 
     g = Game(user_list, b, game_rules)
     
-
+    vis = GameVisualizerXO(g)
+    vis.RunNextStep()
 
 def Test(event):
     TestConvertCoordinates()
@@ -470,7 +552,11 @@ def Test(event):
     myprint('Все тесты прошли без ошибок')
 
 document["button__start_test"].bind("click", Test)
-    </script>
+
+TestXO()
+
+</script>
+
 
 </body>
 
