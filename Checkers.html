@@ -1,4 +1,9 @@
-﻿<!-- Copyright 2025 by Alexei Bezborodov <AlexeiBv+html_checkers@narod.ru> -->
+<!-- 
+Copyright © 2026 
+Алексей Безбородов. Контакты: <AlexeiBv+html_checkers@narod.ru>
+Лицензия: Общественное достояние: http://unlicense.org/
+License: Public domain: http://unlicense.org/
+-->
 <!DOCTYPE html>
 <html>
 
@@ -10,12 +15,21 @@
 </head>
 <body>
 
-    <button id="button__start_test">Запустить тестирование</button>
+<button id="button__start_test">Запустить тестирование</button>
 
-    <p id="out-text"></p>
+<p id="out-text"></p>
 
-    <script type="text/python">
-from browser import document, html, window
+<script type="text/python">
+
+ask_wh = True
+ask_text_or_html = True
+in_html = True
+
+try:
+    from browser import document, html, window
+except ImportError:
+    in_html = False
+
 import enum
 
 class UserType(enum.Enum): # Тип пользователя
@@ -201,10 +215,16 @@ def BaseClassesTest():
 
 
 def myprint(s):
-    document["out-text"].innerHTML = document["out-text"].innerHTML + "<br />" + str(s)
+    if in_html:
+        document["out-text"].innerHTML = document["out-text"].innerHTML + "<br />" + str(s)
+    else:
+        print(s)
 
 def owerride_print(s):
-    document["out-text"].innerHTML = str(s)
+    if in_html:
+        document["out-text"].innerHTML = str(s)
+    else:
+        print(s)
 
 
 def GetVerticalWords(size):
@@ -461,9 +481,9 @@ def TestPlaceCheck():
     assert ShorterToAqamarine(13,15)==True
     assert ShorterToAqamarine(1,8)==False
 
-def TestXO():
-    # Игра крестики - нолики
-    class GameVisualizerXO (GameVisualizer):
+def MakeAndRunHtmlVisualizerXO(game):
+    # Игра крестики - нолики в Html
+    class GameVisualizerHTML_XO (GameVisualizer):
         def __init__(self, a_Game):
             self.game = a_Game
 
@@ -497,17 +517,91 @@ def TestXO():
             board_html += "<p>Ходят " + user_play_item + "</p>"
 
             owerride_print(board_html)
+    vis = GameVisualizerHTML_XO(game)
+    vis.RunNextStep()
+
+def DrawTextTable(GetValue, w, h):
+    ttStart = 0
+    ttContinue = 1
+    ttBranch = 2
+    ttEnd = 3
+    table_unicode = [
+        ['╔', '═', '╤', '╗'],
+        ['║', ' ', '│', '║'],
+        ['╟', '─', '┼', '╢'],
+        ['╚', '═', '╧', '╝'],
+    ]
+
+    num_count = 2
+    def DrawTableLine(tt, w):
+        t = table_unicode[tt]
+        result = " " * num_count + t[ttStart]
+        result += ''.join([t[ttContinue] + t[ttBranch] for i in range(w - 1)]) + t[ttContinue] + t[ttEnd]
+        return result
+
+    new_line = '\n'
+    board_text = " " * (num_count + 1) + "".join([chr(ord('a') + i) + " " for i in range(w)]) + new_line
+    for y in range(h):
+        tt = ttBranch
+        start = (y == 0)
+        if start:
+            tt = ttStart
+        t = table_unicode[tt]
+        board_text += DrawTableLine(tt, w) + new_line
+        t = table_unicode[ttContinue]
+        board_text += str(y + 1).zfill(num_count) + t[ttStart]
+        for x in range(w):
+            add = t[ttBranch]
+            if x == (w - 1):
+                add = t[ttEnd]
+            board_text += GetValue(x, y) + add
+        board_text += new_line
+    board_text += DrawTableLine(ttEnd, w) + new_line
+    return board_text
+
+def MakeAndRunTextVisualizerXO(game):
+    # Игра крестики - нолики в тексте
+    class GameVisualizerText_XO (GameVisualizer):
+        def __init__(self, a_Game):
+            self.game = a_Game
+
+        def GetUserPlayItem(self, userID):
+            user_play_item = "O"
+            if (userID == 0):
+                user_play_item = "X"
+            return user_play_item
+
+        def RunNextStep(self):
+            self.DrawBoard()
+            step = input("Ваш ход:")
+            x, y = FromStringToXY(step)
+            game.DoStep(Point(x, y))
+            self.RunNextStep()
+
+        def DrawBoard(self):
+            game = self.game
+            board = game.gBoard
+            def GetValueXO(x, y):
+                b_item = board.GetItem(Point(x, y))
+                if b_item.iType == BoardItemType.biChecker:
+                    user_play_item = self.GetUserPlayItem(b_item.userID)
+                    return user_play_item
+                else:
+                    return " "
+
+            new_line = '\n'
+            board_text = DrawTextTable(GetValueXO, board.bWidth, board.bHeight) + new_line
+            user_play_item = self.GetUserPlayItem(game.GetCurrentUserID())
+            board_text += "Ходят " + user_play_item + new_line
+
+            print(board_text)
+
+    vis = GameVisualizerText_XO(game)
+    vis.RunNextStep()
 
 
+def MakeGameXO(w, h):
     class GameRulesXO (GameRules):
-        def InitBoard(self, a_Board):
-            b = a_Board
-
-            for y in range(b.GetHeight()):
-                for x in range(b.GetWidth()):
-                    p = Point(x, y)
-                    b.SetItem(p, BoardItem(BoardItemType.biNone, 0))
-
         def PointsToNextStep(self, a_Board):
             result = []
             for y in range(a_Board.GetHeight()):
@@ -530,14 +624,11 @@ def TestXO():
         User(UserType.utHuman, "Maxim"),
     ]
 
-    b = Board(3, 3)
+    b = Board(w, h)
 
     game_rules = GameRulesXO()
 
-    g = Game(user_list, b, game_rules)
-    
-    vis = GameVisualizerXO(g)
-    vis.RunNextStep()
+    return Game(user_list, b, game_rules)
 
 def Test(event):
     TestConvertCoordinates()
@@ -551,12 +642,37 @@ def Test(event):
     TestPlaceCheck()
     myprint('Все тесты прошли без ошибок')
 
-document["button__start_test"].bind("click", Test)
+if in_html:
+    document["button__start_test"].bind("click", Test)
 
-TestXO()
+h = w = 3
+
+if ask_wh:
+    sw = input("Укажите ширину [3]:")
+    if sw != "":
+        w = int(sw)
+    sh = input("Укажите высоту [3]:")
+    if sh != "":
+        h = int(sh)
+g = MakeGameXO(w, h)
+
+use_html = True
+if ask_text_or_html:
+    if in_html:
+        s_use_html = input("Укажите тип визуала [1] (1 - html / 0 - текст):")
+        if s_use_html != "":
+            use_html = bool(int(s_use_html))
+    else:
+        use_html = False
+
+if use_html:
+    MakeAndRunHtmlVisualizerXO(g)
+else:
+    if not in_html:
+        Test(None)
+    MakeAndRunTextVisualizerXO(g)
 
 </script>
-
 
 </body>
 
