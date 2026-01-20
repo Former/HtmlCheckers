@@ -461,6 +461,100 @@ def TestPlaceCheck():
     assert ShorterToAqamarine(13,15)==True
     assert ShorterToAqamarine(1,8)==False
 
+def _inside_board(p: Point, board: Board) -> bool:
+    return 0 <= p.x < board.GetWidth() and 0 <= p.y < board.GetHeight()
+
+def _forward_dir(user_id: int) -> int:
+    return 1 if user_id == 0 else -1
+
+def NextItemStep(a_PointStart: Point, a_Board: Board) -> list:
+    piece = a_Board.GetItem(a_PointStart)
+
+
+    if piece.iType != BoardItemType.biChecker:
+        return []
+
+    user_id = piece.userID
+    forward = _forward_dir(user_id)
+
+    result = []
+    for dx in (-1, 1):
+        dest = Point(a_PointStart.x + dx, a_PointStart.y + forward)
+        if _inside_board(dest, a_Board):
+            if a_Board.GetItem(dest).iType == BoardItemType.biNone:
+                result.append(dest)
+    for dx in (-1, 1):
+        for dy in (-1, 1):
+            adj  = Point(a_PointStart.x + dx, a_PointStart.y + dy)   # соседняя клетка
+            land = Point(adj.x + dx, adj.y + dy)                  # поле после прыжка
+            if not (_inside_board(adj, a_Board) and _inside_board(land, a_Board)):
+                continue
+            adj_item  = a_Board.GetItem(adj)
+            land_item = a_Board.GetItem(land)
+            if (adj_item.iType in (BoardItemType.biChecker, BoardItemType.biDamka) and
+                adj_item.userID != user_id and
+                land_item.iType == BoardItemType.biNone):
+                result.append(land)
+    unique = []
+    for p in result:
+        if p not in unique:
+            unique.append(p)
+    return unique
+
+def TestNextItemStep():
+    board = Board(8, 8)
+    start = Point(2, 2)
+    board.SetItem(start,
+                  BoardItem(BoardItemType.biChecker, 0))
+    assert sorted(NextItemStep(start, board), key=lambda p: (p.x, p.y)) == \
+           sorted([Point(1,3), Point(3,3)], key=lambda p: (p.x, p.y))
+    board2 = Board(8, 8)
+    start2 = Point(0, 0)
+    board2.SetItem(start2,
+                   BoardItem(BoardItemType.biChecker, 0))
+    assert NextItemStep(start2, board2) == [Point(1,1)]
+
+    board3 = Board(8, 8)
+    my3 = Point(2, 2)
+    opp3 = Point(3, 3)                     # вражеская шашка
+    board3.SetItem(my3,
+                   BoardItem(BoardItemType.biChecker, 0))
+    board3.SetItem(opp3,
+                   BoardItem(BoardItemType.biChecker, 1))
+    assert sorted(NextItemStep(my3, board3), key=lambda p: (p.x, p.y)) == \
+           sorted([Point(1,3), Point(4,4)], key=lambda p: (p.x, p.y))
+
+    board4 = Board(8, 8)
+    my4 = Point(4,4)
+    board4.SetItem(my4,
+                   BoardItem(BoardItemType.biChecker, 1))   # игрок 1 – вперёд вверх
+    foes = [(Point(3,3), Point(2,2)),
+            (Point(5,3), Point(6,2)),
+            (Point(3,5), Point(2,6)),
+            (Point(5,5), Point(6,6))]
+    for foe, land in foes:
+        board4.SetItem(foe,
+                       BoardItem(BoardItemType.biChecker, 0))   # противник
+    assert sorted(NextItemStep(my4, board4), key=lambda p: (p.x, p.y)) == \
+           sorted([Point(2,2), Point(6,2), Point(2,6), Point(6,6)],
+                  key=lambda p: (p.x, p.y))
+
+    board5 = Board(8, 8)
+    damka = Point(3,3)
+    board5.SetItem(damka,
+                   BoardItem(BoardItemType.biDamka, 0))
+    assert NextItemStep(damka, board5) == []
+
+    board6 = Board(8, 8)
+    my6 = Point(4,4)
+    board6.SetItem(my6,
+                   BoardItem(BoardItemType.biChecker, 0))
+    opp6 = Point(5,5)                      # вражеская фигура
+    board6.SetItem(opp6,
+                   BoardItem(BoardItemType.biChecker, 1))
+    assert sorted(NextItemStep(my6, board6), key=lambda p: (p.x, p.y)) == \
+           sorted([Point(3,5), Point(6,6)], key=lambda p: (p.x, p.y))
+
 def TestXO():
     # Игра крестики - нолики
     class GameVisualizerXO (GameVisualizer):
@@ -548,10 +642,18 @@ def Test(event):
     TestListStartPoints()
     TestBoardEqual()
     TestStepFunctions()
-    TestPlaceCheck()
+    TestNextItemStep()
     myprint('Все тесты прошли без ошибок')
 
 document["button__start_test"].bind("click", Test)
+
+#можно будет использовать в задаче №43
+#for i in range(h):
+#    data[h // 2][i] = "x"
+#    data[i][h // 2] = "x"
+#    data[i][i] = "x"
+#    j = w - 1 - i
+#    data[i][j] = "x"
 
 TestXO()
 
