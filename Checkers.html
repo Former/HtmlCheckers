@@ -14,6 +14,13 @@
 
     <p id="out-text"></p>
 
+    <select id="game_select" name="выбор игры">
+        <option value="" selected>выбери игру</option>
+        <option value="шахматы">шахматы</option>
+        <option value="шашки">шашки</option>
+        <option value="крестики нолики">крестики нолики</option>
+    </select>
+    
     <script type="text/python">
 from browser import document, html, window
 import enum
@@ -539,6 +546,14 @@ def TestXO():
     vis = GameVisualizerXO(g)
     vis.RunNextStep()
 
+def game_select_change(event):
+    document["out-text"].innerHTML = ""
+    selected = document["game_select"].value
+    if selected == "крестики нолики":
+        TestXO()
+    # elif selected == "шашки":  ...
+    # elif selected == "шахматы": ...
+
 def Test(event):
     TestConvertCoordinates()
     TestCreateArray2D()
@@ -552,8 +567,7 @@ def Test(event):
     myprint('Все тесты прошли без ошибок')
 
 document["button__start_test"].bind("click", Test)
-
-TestXO()
+document["game_select"].bind("change", game_select_change)
 
 </script>
 
