@@ -19,6 +19,13 @@ License: Public domain: http://unlicense.org/
 
 <p id="out-text"></p>
 
+    <select id="game_select" name="выбор игры">
+        <option value="" selected>выбери игру</option>
+        <option value="шахматы">шахматы</option>
+        <option value="шашки">шашки</option>
+        <option value="крестики нолики">крестики нолики</option>
+    </select>  
+  
 <script type="text/python">
 
 ask_wh = True
@@ -630,6 +637,14 @@ def MakeGameXO(w, h):
 
     return Game(user_list, b, game_rules)
 
+def game_select_change(event):
+    document["out-text"].innerHTML = ""
+    selected = document["game_select"].value
+    if selected == "крестики нолики":
+        TestXO()
+    # elif selected == "шашки":  ...
+    # elif selected == "шахматы": ...
+
 def Test(event):
     TestConvertCoordinates()
     TestCreateArray2D()
@@ -644,6 +659,7 @@ def Test(event):
 
 if in_html:
     document["button__start_test"].bind("click", Test)
+    document["game_select"].bind("change", game_select_change)
 
 h = w = 3
 
